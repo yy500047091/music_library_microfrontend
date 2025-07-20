@@ -115,20 +115,14 @@ const App = () => {
             <LoginForm onLogin={handleLogin} error={authState.error} />
           ) : (
 
+            
             <Suspense fallback={<div className="loading">Loading Player...</div>}>
-  {window.musicLibraryLoaded ? (
-    <MusicLibrary 
-     userRole={authState.role}
+              <MusicLibrary 
+                userRole={authState.role}
                 onAddSong={(song) => console.log('Add song:', song)}
                 onDeleteSong={(id) => console.log('Delete song:', id)}
-    />
-  ) : (
-    <div className="error">
-      Music Library unavailable. Try refreshing.
-    </div>
-  )}
-</Suspense>
-        
+              />
+            </Suspense>
           )}
         </main>
       </div>

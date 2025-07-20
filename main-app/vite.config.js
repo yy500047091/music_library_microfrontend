@@ -10,7 +10,7 @@ export default defineConfig({
       remotes: {
         // 👇 Replace with your Netlify URL after deploying
         musicLibrary: process.env.NODE_ENV === 'production' 
-          ? 'https://your-music-library.netlify.app/assets/remoteEntry.js'
+          ? 'https://microfrontendmusic.netlify.app/assets/remoteEntry.js'
           : 'http://localhost:5174/assets/remoteEntry.js',
       },
       shared: ['react', 'react-dom']
@@ -22,5 +22,5 @@ export default defineConfig({
     cssCodeSplit: false,
   },
   // 👇 Netlify needs a base path if not at root
-  base: process.env.NODE_ENV === 'production' ? 'https://your-main-app.netlify.app/' : '/',
+  base:  '/',
 })
