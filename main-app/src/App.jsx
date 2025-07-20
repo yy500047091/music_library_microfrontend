@@ -1,181 +1,127 @@
-// main-app/src/App.jsx
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, Suspense, lazy, useCallback } from 'react';
 import AuthContext from './AuthContext';
 import LoginForm from './LoginForm';
 import './App.css';
 
-// Lazy load the micro frontend
 const MusicLibrary = lazy(() => import('musicLibrary/MusicLibrary'));
 
-// Mock JWT utility functions
-const createMockJWT = (user) => {
-  const payload = {
-    username: user.username,
-    role: user.role,
-    exp: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
-    iat: Date.now()
-  };
-  
-  // In a real app, this would be properly signed
-  return btoa(JSON.stringify(payload));
-};
-
-const decodeMockJWT = (token) => {
-  try {
-    const payload = JSON.parse(atob(token));
-    
-    // Check if token is expired
-    if (payload.exp < Date.now()) {
-      return null;
-    }
-    
-    return {
-      username: payload.username,
-      role: payload.role
-    };
-  } catch (error) {
-    return null;
-  }
-};
-
 const App = () => {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [authError, setAuthError] = useState('');
+  const [authState, setAuthState] = useState({
+    user: null,
+    role: null,
+    isLoading: true,
+    error: ''
+  });
 
-  // Check for existing token on app load
   useEffect(() => {
-    const token = localStorage.getItem('musicAppToken');
-    if (token) {
-      const userData = decodeMockJWT(token);
-      if (userData) {
-        setUser(userData);
-      } else {
-        localStorage.removeItem('musicAppToken');
+    // Get user data from localStorage
+    const savedAuth = localStorage.getItem('musicAppAuth');
+    if (savedAuth) {
+      try {
+        const { user, role } = JSON.parse(savedAuth);
+        setAuthState(prev => ({
+          ...prev,
+          user,
+          role,
+          isLoading: false
+        }));
+      } catch (error) {
+        localStorage.removeItem('musicAppAuth');
+        setAuthState(prev => ({ ...prev, isLoading: false }));
       }
+    } else {
+      setAuthState(prev => ({ ...prev, isLoading: false }));
     }
-    setIsLoading(false);
   }, []);
 
-  const handleLogin = (credentials) => {
-    setAuthError('');
-    
-    // Mock user database
+
+  const handleLogin = useCallback((credentials) => {
     const users = [
-      { username: 'admin', password: 'admin123', role: 'admin' },
-      { username: 'user', password: 'user123', role: 'user' }
+      { user: 'admin@musicapp.com', password: 'SecureAdmin@123', role: 'admin' },
+      { user: 'user@musicapp.com', password: 'MusicLover@456', role: 'user' },
+      { user: 'guest@musicapp.com', password: 'ListenOnly@789', role: 'guest' }
     ];
-
+  
     const foundUser = users.find(
-      u => u.username === credentials.username && u.password === credentials.password
+      u => u.user === credentials.user && 
+           u.password === credentials.password
     );
-
+  
     if (foundUser) {
-      const token = createMockJWT(foundUser);
-      localStorage.setItem('musicAppToken', token);
+      // Save to localStorage with proper structure
+      const authData = {
+        user: foundUser.user,
+        role: credentials.role // Get role from the form submission
+      };
+      localStorage.setItem('musicAppAuth', JSON.stringify(authData));
       
-      setUser({
-        username: foundUser.username,
-        role: foundUser.role
+      setAuthState({
+        user: foundUser.user,
+        role: credentials.role, // Use the role from credentials
+        isLoading: false,
+        error: ''
       });
     } else {
-      setAuthError('Invalid username or password');
+      setAuthState(prev => ({
+        ...prev,
+        error: 'Invalid username or password'
+      }));
     }
-  };
+  }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem('musicAppToken');
-    setUser(null);
-  };
+  const handleLogout = useCallback(() => {
+    localStorage.removeItem('musicAppAuth');
+    setAuthState({
+      user: null,
+      role: null,
+      isLoading: false,
+      error: ''
+    });
+  }, []);
 
-  if (isLoading) {
-    return (
-      <div className="app">
-        <div className="loading-screen">
-          <div className="loading-spinner"></div>
-          <p>Loading Music Library...</p>
-        </div>
-      </div>
-    );
+  const isAuthenticated = useCallback(() => {
+    return !!authState.user;
+  }, [authState.user]);
+
+  if (authState.isLoading) {
+    return <div className="loading-screen">Loading...</div>;
   }
 
   return (
-    <AuthContext.Provider value={{ user, login: handleLogin, logout: handleLogout }}>
+    <AuthContext.Provider value={{
+      user: authState.user,
+      role: authState.role,
+      login: handleLogin,
+      logout: handleLogout,
+      isAuthenticated
+    }}>
       <div className="app">
         <header className="app-header">
-          <div className="header-content">
-            <h1>🎵 Music Library App</h1>
-            <p className="header-subtitle">Micro Frontend Architecture Demo</p>
-            
-            {user && (
-              <div className="header-actions">
-                <span className="welcome-text">
-                  Welcome, {user.username}!
-                </span>
-                <span className={`role-badge role-${user.role}`}>
-                  {user.role.toUpperCase()}
-                </span>
-                <button onClick={handleLogout} className="logout-btn">
-                  Logout
-                </button>
-              </div>
-            )}
-          </div>
+          <h1>Music Library</h1>
+          {authState.user && (
+            <div className="user-info">
+              <span>Welcome, {authState.user}</span>
+              <span className={`role-badge ${authState.role}`}>
+                {authState.role.toUpperCase()}
+              </span>
+              <button onClick={handleLogout}>Logout</button>
+            </div>
+          )}
         </header>
 
         <main className="app-main">
-          {!user ? (
-            <div className="auth-container">
-              <div className="auth-card">
-                <h2>🔐 Please Login</h2>
-                <p className="auth-description">
-                  Access your music library with your credentials
-                </p>
-                
-                <LoginForm onLogin={handleLogin} error={authError} />
-                
-                <div className="demo-credentials">
-                  <h3>Demo Credentials:</h3>
-                  <div className="credentials-grid">
-                    <div className="credential-item">
-                      <strong>Admin:</strong>
-                      <br />
-                      Username: admin
-                      <br />
-                      Password: admin123
-                    </div>
-                    <div className="credential-item">
-                      <strong>User:</strong>
-                      <br />
-                      Username: user
-                      <br />
-                      Password: user123
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {!authState.user ? (
+            <LoginForm onLogin={handleLogin} error={authState.error} />
           ) : (
-            // Render the Music Library micro frontend directly here
-            <div className="music-library-container">
-              <Suspense fallback={
-                <div className="micro-frontend-loading">
-                  <div className="loading-spinner"></div>
-                  <p>Loading Music Library Micro Frontend...</p>
-                </div>
-              }>
-                <MusicLibrary user={user} />
-              </Suspense>
-            </div>
+            <Suspense fallback={<div className="loading">Loading Player...</div>}>
+              <MusicLibrary 
+                userRole={authState.role}
+                onAddSong={(song) => console.log('Add song:', song)}
+                onDeleteSong={(id) => console.log('Delete song:', id)}
+              />
+            </Suspense>
           )}
         </main>
-
-        <footer className="app-footer">
-          <p>
-            Built with React + Micro Frontend Architecture | 
-            {user ? ` Logged in as ${user.username} (${user.role})` : ' Please login to continue'}
-          </p>
-        </footer>
       </div>
     </AuthContext.Provider>
   );

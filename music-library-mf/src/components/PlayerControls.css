@@ -1,0 +1,30 @@
+.player__icon {
+    font-size: 24px;
+  }
+  
+  .player__icon:hover,
+  .player__green:hover {
+    transition: transform 0.2s ease-in-out;
+    transform: scale(1.2) !important;
+    cursor: pointer;
+  }
+  
+  .player__shuffle {
+    font-size: 20px;
+  }
+  
+  .player__repeat {
+    font-size: 20px;
+  }
+  
+  .player__previous {
+    font-size: 30px;
+  }
+  
+  .player__play {
+    font-size: 40px;
+  }
+  
+  .player__next {
+    font-size: 30px;
+  }

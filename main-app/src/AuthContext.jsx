@@ -1,10 +1,11 @@
-// main-app/src/AuthContext.js
 import { createContext } from 'react';
 
 const AuthContext = createContext({
   user: null,
+  role: null,
   login: () => {},
-  logout: () => {}
+  logout: () => {},
+  isAuthenticated: () => false
 });
 
 export default AuthContext;
