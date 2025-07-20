@@ -87,6 +87,7 @@
     color: white;
     cursor: pointer;
     margin: 0 15px;
+    padding: 12px;
   }
   
   .player__play-btn:hover {

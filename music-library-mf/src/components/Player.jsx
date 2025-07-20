@@ -1,13 +1,13 @@
-import { useState, useRef, useEffect } from 'react';
-import './Player.css';
+import { useState, useRef, useEffect } from "react";
+import "./Player.css";
 
-const Player = ({ 
-  currentTrack, 
-  isPlaying, 
-  onPlayPause, 
-  onNext, 
+const Player = ({
+  currentTrack,
+  isPlaying,
+  onPlayPause,
+  onNext,
   onPrevious,
-  onVolumeChange 
+  onVolumeChange,
 }) => {
   const audioRef = useRef(null);
   const [progress, setProgress] = useState(0);
@@ -17,9 +17,11 @@ const Player = ({
   // Handle play/pause based on isPlaying prop
   useEffect(() => {
     if (!audioRef.current) return;
-    
+
     if (isPlaying) {
-      audioRef.current.play().catch(e => console.error("Playback failed:", e));
+      audioRef.current
+        .play()
+        .catch((e) => console.error("Playback failed:", e));
     } else {
       audioRef.current.pause();
     }
@@ -59,10 +61,10 @@ const Player = ({
 
   // Format time (seconds to MM:SS)
   const formatTime = (time) => {
-    if (isNaN(time)) return '0:00';
+    if (isNaN(time)) return "0:00";
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   // Handle seeking in the track
@@ -83,19 +85,22 @@ const Player = ({
         onLoadedMetadata={handleLoadedMetadata}
         onEnded={handleSongEnd}
       />
-      
+
       {/* Left section - Album art and song info */}
       <div className="player__left">
         {currentTrack?.album?.images?.[0]?.url && (
-          <img 
-            className="player__albumLogo" 
-            src={currentTrack.album.images[0].url} 
-            alt="Album Cover" 
+          <img
+            className="player__albumLogo"
+            src={currentTrack.album.images[0].url}
+            alt="Album Cover"
           />
         )}
         <div className="player__songInfo">
-          <h4>{currentTrack?.name || 'No song selected'}</h4>
-          <p>{currentTrack?.artists?.map(artist => artist.name).join(', ') || 'Unknown artist'}</p>
+          <h4>{currentTrack?.name || "No song selected"}</h4>
+          <p>
+            {currentTrack?.artists?.map((artist) => artist.name).join(", ") ||
+              "Unknown artist"}
+          </p>
         </div>
       </div>
 
@@ -105,25 +110,27 @@ const Player = ({
           <button className="player__control-btn" onClick={onPrevious}>
             <i className="fas fa-step-backward"></i>
           </button>
-          
+
           <button className="player__play-btn" onClick={onPlayPause}>
             {isPlaying ? (
-              <i className="fas fa-pause"></i>
+              <p>Pause</p>
             ) : (
-              <i className="fas fa-play"></i>
+              <p>Play</p>
             )}
           </button>
-          
+
           <button className="player__control-btn" onClick={onNext}>
             <i className="fas fa-step-forward"></i>
           </button>
         </div>
-        
+
         <div className="player__progress-container">
-          <span className="player__time">{formatTime(audioRef.current?.currentTime || 0)}</span>
+          <span className="player__time">
+            {formatTime(audioRef.current?.currentTime || 0)}
+          </span>
           <div className="player__progress-bar" onClick={handleSeek}>
-            <div 
-              className="player__progress" 
+            <div
+              className="player__progress"
               style={{ width: `${progress}%` }}
             ></div>
           </div>
@@ -134,7 +141,7 @@ const Player = ({
       {/* Right section - Volume control */}
       <div className="player__right">
         <div className="player__volume-control">
-          <i className={`fas fa-volume-${volume > 0 ? 'up' : 'off'}`}></i>
+          <i className={`fas fa-volume-${volume > 0 ? "up" : "off"}`}></i>
           <input
             type="range"
             min="0"
