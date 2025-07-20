@@ -3,7 +3,8 @@ import AuthContext from './AuthContext';
 import LoginForm from './LoginForm';
 import './App.css';
 
-const MusicLibrary = lazy(() => import('musicLibrary/MusicLibrary'));
+const MusicLibrary = lazy(() => import('musicLibrary/MusicLibrary')
+  .catch(() => ({ default: () => <div>Failed to load Music Library</div> })));
 
 const App = () => {
   const [authState, setAuthState] = useState({
@@ -113,13 +114,21 @@ const App = () => {
           {!authState.user ? (
             <LoginForm onLogin={handleLogin} error={authState.error} />
           ) : (
+
             <Suspense fallback={<div className="loading">Loading Player...</div>}>
-              <MusicLibrary 
-                userRole={authState.role}
+  {window.musicLibraryLoaded ? (
+    <MusicLibrary 
+     userRole={authState.role}
                 onAddSong={(song) => console.log('Add song:', song)}
                 onDeleteSong={(id) => console.log('Delete song:', id)}
-              />
-            </Suspense>
+    />
+  ) : (
+    <div className="error">
+      Music Library unavailable. Try refreshing.
+    </div>
+  )}
+</Suspense>
+        
           )}
         </main>
       </div>

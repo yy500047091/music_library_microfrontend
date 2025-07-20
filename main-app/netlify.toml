@@ -1,0 +1,17 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  functions = "functions"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+    # Optional: Add these if your main app needs to be embedded elsewhere
+    Access-Control-Allow-Origin = "*" 
+    Access-Control-Allow-Methods = "GET, OPTIONS"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

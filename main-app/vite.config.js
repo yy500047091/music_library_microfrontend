@@ -8,8 +8,10 @@ export default defineConfig({
     federation({
       name: 'mainApp',
       remotes: {
-        musicLibrary: 'http://localhost:4173/assets/remoteEntry.js',
-        // For local development, use: 'http://localhost:5174/assets/remoteEntry.js'
+        // 👇 Replace with your Netlify URL after deploying
+        musicLibrary: process.env.NODE_ENV === 'production' 
+          ? 'https://your-music-library.netlify.app/assets/remoteEntry.js'
+          : 'http://localhost:5174/assets/remoteEntry.js',
       },
       shared: ['react', 'react-dom']
     })
@@ -17,6 +19,8 @@ export default defineConfig({
   build: {
     target: 'esnext',
     minify: false,
-    cssCodeSplit: false
-  }
+    cssCodeSplit: false,
+  },
+  // 👇 Netlify needs a base path if not at root
+  base: process.env.NODE_ENV === 'production' ? 'https://your-main-app.netlify.app/' : '/',
 })

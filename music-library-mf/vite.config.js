@@ -17,10 +17,13 @@ export default defineConfig({
   build: {
     target: 'esnext',
     minify: false,
-    cssCodeSplit: false
+    cssCodeSplit: false,
+    modulePreload: false, // Helps avoid loading issues
   },
   server: {
     port: 5174,
-    cors: true
-  }
+    cors: true,
+  },
+  // 👇 Netlify needs a base path if not at root
+  base: process.env.NODE_ENV === 'production' ? 'https://your-music-library.netlify.app/' : '/',
 })
